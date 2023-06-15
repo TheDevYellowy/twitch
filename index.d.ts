@@ -88,7 +88,7 @@ export class EventSub extends EventEmitter {
   public api: API;
 
   public connect(url: null | string): void;
-  public subscribe(
+  public async subscribe(
     type: eventType,
     version: subVersion,
     condition: conditions,
@@ -118,10 +118,18 @@ export class API extends EventEmitter {
   public headers: headers;
   public valid: boolean;
 
-  public post(url: string, headers: object, data: object): string | object;
-  public patch(url: string, headers: object, data: object): string | object;
-  public get(url: string): string | object;
-  public delete(url: string): string | object;
+  public async post(
+    url: string,
+    headers: object,
+    data: object,
+  ): string | object;
+  public async patch(
+    url: string,
+    headers: object,
+    data: object,
+  ): string | object;
+  public async get(url: string): string | object;
+  public async delete(url: string): string | object;
 
   public on(
     event: "result",
