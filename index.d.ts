@@ -62,6 +62,19 @@ export type eventType =
 
 export type subVersion = 1 | 2 | "beta";
 
+export type conditions = {
+  "broadcaster_user_id": string | null;
+  "to_broadcaster_user_id": string | null;
+  "moderator_user_id": string | null;
+  "reward_id": string | null;
+  "organization_id": string | null;
+  "category_id": string | null;
+  "campaign_id": string | null;
+  "extension_client_id": string | null;
+  "client_id": string | null;
+  "user_id": string | null;
+};
+
 export class EventSub extends EventEmitter {
   constructor(
     client_id: string,
@@ -78,7 +91,7 @@ export class EventSub extends EventEmitter {
   public subscribe(
     type: eventType,
     version: subVersion,
-    condition: object,
+    condition: conditions,
   ): object;
   public on(event: "debug", listener: (msg: string) => void): this;
   public on(event: "raw", listener: (packet: object) => void): this;
