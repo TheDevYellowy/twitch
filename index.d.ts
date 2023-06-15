@@ -88,11 +88,11 @@ export class EventSub extends EventEmitter {
   public api: API;
 
   public connect(url: null | string): void;
-  public async subscribe(
+  public subscribe(
     type: eventType,
     version: subVersion,
     condition: conditions,
-  ): object;
+  ): Promise<object>;
   public on(event: "debug", listener: (msg: string) => void): this;
   public on(event: "raw", listener: (packet: object) => void): this;
   public on(event: "online", listener: () => void): this;
@@ -118,18 +118,18 @@ export class API extends EventEmitter {
   public headers: headers;
   public valid: boolean;
 
-  public async post(
+  public post(
     url: string,
     headers: object,
     data: object,
-  ): string | object;
-  public async patch(
+  ): Promise<string | object>;
+  public patch(
     url: string,
     headers: object,
     data: object,
-  ): string | object;
-  public async get(url: string): string | object;
-  public async delete(url: string): string | object;
+  ): Promise<string | object>;
+  public get(url: string): Promise<string | object>;
+  public delete(url: string): Promise<string | object>;
 
   public on(
     event: "result",
