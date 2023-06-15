@@ -1,0 +1,16 @@
+{
+  "name": "twitch",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "typings": "./index.d.ts",
+  "license": "ISC",
+  "dependencies": {
+    "node-fetch": "^2.6.11",
+    "ws": "^8.13.0"
+  }
+}
