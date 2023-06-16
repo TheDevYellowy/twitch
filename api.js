@@ -3,6 +3,7 @@ const { EventEmitter } = require('node:events');
 
 module.exports = class API extends EventEmitter {
   constructor(id, secret, token, refreshToken) {
+    super();
     this.client_id = id;
     this.client_secret = secret;
     this.refresh_token = refreshToken;

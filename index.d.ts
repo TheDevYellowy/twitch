@@ -75,6 +75,38 @@ export type conditions = {
   "user_id": string | null;
 };
 
+export type updateEvent = {
+  broadcaster_user_id: string;
+  broadcaster_user_login: string;
+  broadcaster_user_name: string;
+  title: string;
+  language: string;
+  category_id: string;
+  category_name: string;
+  is_mature: boolean;
+};
+
+export type followEvent = {
+  user_id: string;
+  user_login: string;
+  user_name: string;
+  broadcaster_user_id: string;
+  broadcaster_user_login: string;
+  broadcaster_user_name: string;
+  followed_at: string;
+};
+
+export type subscribeEvent = {
+  user_id: string;
+  user_login: string;
+  user_name: string;
+  broadcaster_user_id: string;
+  broadcaster_user_login: string;
+  broadcaster_user_name: string;
+  tier: "1000" | "2000" | "3000" | "Prime";
+  is_gift: boolean;
+};
+
 export class EventSub extends EventEmitter {
   constructor(
     client_id: string,
