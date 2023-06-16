@@ -30,7 +30,7 @@ module.exports = class API extends EventEmitter {
       ...headers
     }
 
-    const res = await fetch(`https://twitch.tv/helix/${url}`, {
+    const res = await fetch(`https://api.twitch.tv/helix/${url}`, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(data)
@@ -57,7 +57,7 @@ module.exports = class API extends EventEmitter {
       ...headers
     }
 
-    const res = await fetch(`https://twitch.tv/helix/${url}`, {
+    const res = await fetch(`https://api.twitch.tv/helix/${url}`, {
       method: 'PATCH',
       headers: headers,
       body: JSON.stringify(data)
@@ -78,7 +78,7 @@ module.exports = class API extends EventEmitter {
   async get(url) {
     if (!this.valid) return 'The token variable needs to be set';
 
-    const res = await fetch(`https://twitch.tv/helix/${url}`, {
+    const res = await fetch(`https://api.twitch.tv/helix/${url}`, {
       method: 'GET',
       headers: this.headers
     });
@@ -97,7 +97,7 @@ module.exports = class API extends EventEmitter {
 
   async delete(url) {
     if (!this.valid) return 'The token variable needs to be set';
-    const res = await fetch(`https://twitch.tv/helix/${url}`, {
+    const res = await fetch(`https://api.twitch.tv/helix/${url}`, {
       method: 'DELETE',
       headers: this.headers
     });
