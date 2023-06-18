@@ -191,7 +191,7 @@ export type subscriptionGiftEvent = {
   broadcaster_user_login: string;
   broadcaster_user_name: string;
   total: number;
-  tier: "1000" | "2000" | "3000" | "Prime";
+  tier: "1000" | "2000" | "3000";
   cumulative_total: number | null;
   is_anonymous: boolean;
 };
