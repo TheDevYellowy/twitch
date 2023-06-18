@@ -88,7 +88,8 @@ module.exports = class EventSub extends EventEmitter {
       });
     }
 
-    if (packet.metadata.subscription_type) this.emit(packet.metadata.subscription_type, packet.payload.event);
+    if (packet.metadata.subscription_type == 'drop.entitlement.grant') this.emit(packet.metadata.subscription_type, packet.payload.events);
+    else if (packet.metadata.subscription_type) this.emit(packet.metadata.subscription_type, packet.payload.event);
   }
 
   async subscribe(type, version, condition) {
