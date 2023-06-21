@@ -1059,7 +1059,7 @@ interface OutgoingTags {
 
 type ChannelName = `#${string}`;
 
-namespace Options {
+declare namespace Options {
   export interface Options {
     globalDefaultChannel: string;
     skipMembership: boolean;
@@ -1070,7 +1070,7 @@ namespace Options {
     port: number;
     secure: boolean;
     reconnect: boolean;
-    reconnectDelay: number;
+    reconnectDecay: number;
     reconnectInterval: number;
     maxReconnectInterval: number;
     maxReconnectAttempts: number;
@@ -1078,7 +1078,7 @@ namespace Options {
   }
   export interface Identity {
     username: string;
-    password: string | Promsie<string> | (() => string | Promise<string>);
+    password: string | Promise<string> | (() => string | Promise<string>);
   }
   export type Channels = string[];
 }
@@ -1092,7 +1092,7 @@ interface ClientOptions {
 
 interface BadgeInfo {
   subscriber?: string;
-  [key: string]: string;
+  [key: string]: string | undefined;
 }
 
 interface Badges {
@@ -1101,7 +1101,7 @@ interface Badges {
   subscriber?: string;
   staff?: string;
   turbo?: string;
-  [key: string]: string;
+  [key: string]: string | undefined;
 }
 
 interface GlobalUserstate {
@@ -1122,9 +1122,140 @@ interface Userstate extends Omit<GlobalUserstate, "user-id"> {
   username: string;
 }
 
+interface subgiftUserstate extends Userstate {
+  "msg-param-recipient-display-name": string;
+  "msg-param-recipient-id": string;
+  "msg-param-recipient-user-name": string;
+  "msg-param-send-count": boolean | string;
+}
+
+interface mysterygiftUserstate extends Userstate {
+  "msg-param-send-count": boolean | string;
+}
+
 interface IRCMessage {}
 
-class ircClientBase extends EventEmitter {
+declare interface subMethod {
+  prime: boolean;
+  plan: "Prime" | "1000" | "2000" | "3000";
+  planName: string;
+}
+
+declare interface ircEvents {
+  "raw_message": [messageCloned: string, message: IRCMessage];
+  "ping": [];
+  "pong": [latency: number];
+  "connected": [server: string, port: string];
+  "resub": [
+    channel: string,
+    username: string,
+    streakMonths: number,
+    message: string,
+    userstate: Userstate,
+    methods: subMethod,
+  ];
+  "sub": [
+    channel: string,
+    username: string,
+    method: subMethod,
+    message: string,
+    userstate: Userstate,
+  ];
+  "subscription": [
+    channel: string,
+    username: string,
+    method: subMethod,
+    message: string,
+    userstate: Userstate,
+  ];
+  "subgift": [
+    channel: string,
+    username: string,
+    streakMonths: number,
+    recipient: string,
+    methods: subMethod,
+    userstate: subgiftUserstate,
+  ];
+  "anonsubgift": [
+    channel: string,
+    streakMonths: number,
+    recipient: string,
+    methods: subMethod,
+    userstate: subgiftUserstate,
+  ];
+  "submysterygift": [
+    channel: string,
+    username: string,
+    giftSubCount: number,
+    methods: subMethod,
+    userstate: mysterygiftUserstate,
+  ];
+  "primepaidupgrade": [
+    channel: string,
+    username: string,
+    methods: subMethod,
+    userstate: Userstate,
+  ];
+  "giftpaidupgrade": [
+    channel: string,
+    username: string,
+    sender: string,
+    userstate: Userstate,
+  ];
+  "anongiftpaidupgrade": [
+    channel: string,
+    username: string,
+    userstate: Userstate,
+  ];
+  "announcement": [
+    channel: string,
+    userstate: Userstate,
+    message: string,
+    self: boolean,
+    color: string,
+  ];
+  "raided": [
+    channel: string,
+    username: string,
+    viewers: number,
+    userstate: Userstate,
+  ];
+  "usernotice": [
+    msgid: string,
+    channel: string,
+    userstate: Userstate,
+    message: string,
+  ];
+  "unhost": [
+    channel: string,
+    viewers: number,
+  ];
+  "hosting": [
+    channel: string,
+    recipient: string,
+    viewers: number,
+  ];
+  "cheer": [
+    channel: string,
+    userstate: Userstate,
+    message: string,
+  ];
+  "redeem": [
+    channel: string,
+    redeemer: string,
+    rewardType: string,
+    userstate: Userstate,
+    message: string,
+  ];
+  "chat": [
+    channel: string,
+    userstate: Userstate,
+    message: string,
+    self: boolean,
+  ];
+}
+
+declare class ircClientBase extends EventEmitter {
   opts: ClientOptions;
 
   maxReconnectAttempts: Options.Connection["maxReconnectAttempts"];
@@ -1156,11 +1287,24 @@ class ircClientBase extends EventEmitter {
   userstate: { [key: ChannelName]: Userstate };
   moderators: { [key: ChannelName]: string[] };
 
+  private lastJoined: ChannelName;
+
   constructor(options: ClientOptions);
   connect(): Promise<[typeof this.server, typeof this.port]>;
   handleMessage(message: IRCMessage);
 
-  private lastJoined: ChannelName;
+  public on<K extends keyof ircEvents>(
+    event: K,
+    listener: (...args: ircEvents[K]) => Awaitable<void>,
+  ): this;
+  public once<K extends keyof ircEvents>(
+    event: K,
+    listener: (...args: ircEvents[K]) => Awaitable<void>,
+  ): this;
+  public off<K extends keyof ircEvents>(
+    event: K,
+    listener: (...args: ircEvents[K]) => Awaitable<void>,
+  ): this;
 }
 
 export class ircClient extends ircClientBase {
