@@ -3,10 +3,7 @@ import { WebSocket } from "ws";
 
 export type Awaitable<T> = T | PromiseLike<T>;
 
-export type headers = {
-  "Authorization": string;
-  "Client-Id": string;
-};
+// EVENTSUB TYPINGS
 
 export interface Events {
   "channel.update": [event: updateEvent];
@@ -1009,6 +1006,13 @@ export class EventSub extends EventEmitter {
   private debug(msg: string): void;
 }
 
+// API TYPINGS
+
+export type headers = {
+  "Authorization": string;
+  "Client-Id": string;
+};
+
 export class API extends EventEmitter {
   constructor(
     id: string,
@@ -1044,4 +1048,146 @@ export class API extends EventEmitter {
       json: object,
     ) => void,
   ): this;
+}
+
+// IRC CLIENT TYPINGS
+
+interface OutgoingTags {
+  "client-nonce": string;
+  "reply-parent-msg-id": string;
+}
+
+type ChannelName = `#${string}`;
+
+namespace Options {
+  export interface Options {
+    globalDefaultChannel: string;
+    skipMembership: boolean;
+    joinInterval: number;
+  }
+  export interface Connection {
+    server: string;
+    port: number;
+    secure: boolean;
+    reconnect: boolean;
+    reconnectDelay: number;
+    reconnectInterval: number;
+    maxReconnectInterval: number;
+    maxReconnectAttempts: number;
+    timeout: number;
+  }
+  export interface Identity {
+    username: string;
+    password: string | Promsie<string> | (() => string | Promise<string>);
+  }
+  export type Channels = string[];
+}
+
+interface ClientOptions {
+  options?: Partial<Options.Options>;
+  connection?: Partial<Options.Connection>;
+  identity?: Options.Identity;
+  channels?: Options.Channels;
+}
+
+interface BadgeInfo {
+  subscriber?: string;
+  [key: string]: string;
+}
+
+interface Badges {
+  broadcaster?: string;
+  moderator?: string;
+  subscriber?: string;
+  staff?: string;
+  turbo?: string;
+  [key: string]: string;
+}
+
+interface GlobalUserstate {
+  "badge-info": BadgeInfo | null;
+  badges: Badges | null;
+  color: string;
+  "display-name": string;
+  "emote-sets": string;
+  "user-id": string;
+  "user-type": "admin" | "global_mod" | "staff" | null;
+  "badge-info-raw": string | null;
+  "badges-raw": string | null;
+}
+
+interface Userstate extends Omit<GlobalUserstate, "user-id"> {
+  mod: boolean;
+  subscriber: boolean;
+  username: string;
+}
+
+interface IRCMessage {}
+
+class ircClientBase extends EventEmitter {
+  opts: ClientOptions;
+
+  maxReconnectAttempts: Options.Connection["maxReconnectAttempts"];
+  maxReconnectInterval: Options.Connection["maxReconnectInterval"];
+  reconnect: Options.Connection["reconnect"];
+  reconnectDecay: Options.Connection["reconnectDecay"];
+  reconnectInterval: Options.Connection["reconnectInterval"];
+  reconnecting: boolean;
+  reconnections: number;
+  reconnectTimer: number;
+
+  currentLatency: number;
+  latency: Date;
+  pingLoop: ReturnType<typeof setInterval>;
+  pingTimeout: ReturnType<typeof setTimeout>;
+  secure: Options.Connection["secure"];
+  server: Options.Connection["server"];
+  port: Options.Connection["port"];
+
+  wasCloseCalled: boolean;
+  reason: string;
+  ws: WebSocket;
+
+  emotes: string;
+  emotesets: {};
+  username: string;
+  channels: ChannelName[];
+  globaluserstate: GlobalUserstate;
+  userstate: { [key: ChannelName]: Userstate };
+  moderators: { [key: ChannelName]: string[] };
+
+  constructor(options: ClientOptions);
+  connect(): Promise<[typeof this.server, typeof this.port]>;
+  handleMessage(message: IRCMessage);
+
+  private lastJoined: ChannelName;
+}
+
+export class ircClient extends ircClientBase {
+  action(
+    channel: string,
+    message: string,
+    tags?: OutgoingTags,
+  ): Promise<[channel: ChannelName, message: string]>;
+
+  announce(
+    channel: string,
+    message: string,
+  ): Promise<[channel: ChannelName, message: string]>;
+
+  join(
+    channel: string,
+  ): Promise<[channel: ChannelName]>;
+
+  reply(
+    channel: string,
+    message: string,
+    replyParentMsgId: string,
+  ): Promise<[channel: ChannelName, message: string]>;
+
+  say(
+    channel: string,
+    message: string,
+    tags?: OutgoingTags,
+  ): Promise<[channel: ChannelName, message: string]>;
 }

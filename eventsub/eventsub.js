@@ -2,7 +2,7 @@ const { WebSocket } = require('ws');
 const { EventEmitter } = require('node:events');
 const td = new TextDecoder();
 
-const API = require('./api');
+const API = require('../api/api');
 
 module.exports = class EventSub extends EventEmitter {
   /**

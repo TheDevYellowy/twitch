@@ -1,4 +1,5 @@
-const EventSub = require('./eventsub');
-const API = require('./api');
+const EventSub = require('./eventsub/eventsub');
+const API = require('./api/api');
+const IrcClient = require('./irc/ircClient');
 
-module.exports = { EventSub, API }
+module.exports = { EventSub, IrcClient, API }
