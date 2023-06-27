@@ -2,6 +2,10 @@ const IrcClientBase = require("./ircClientBase");
 const _ = require('./utils');
 
 module.exports = class ircClient extends IrcClientBase {
+  constructor(options) {
+    super(options);
+  }
+
   action(channel, message, tags) {
     message = `\u0001ACTION ${message}\u0001`;
     return this._sendMessage({ channel, message, tags }, (res, _rej) => {

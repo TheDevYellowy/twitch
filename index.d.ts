@@ -1048,6 +1048,13 @@ export class API extends EventEmitter {
       json: object,
     ) => void,
   ): this;
+  public on(
+    event: "refreshToken",
+    listener: (
+      token: string,
+      refreshToken: string,
+    ) => void,
+  ): this;
 }
 
 // IRC CLIENT TYPINGS
@@ -1253,6 +1260,12 @@ declare interface ircEvents {
     message: string,
     self: boolean,
   ];
+  "chatdeleted": [
+    channel: string,
+    username: string,
+    deletedMessage: string,
+    userstate: Userstate,
+  ];
 }
 
 declare class ircClientBase extends EventEmitter {
@@ -1308,6 +1321,8 @@ declare class ircClientBase extends EventEmitter {
 }
 
 export class ircClient extends ircClientBase {
+  constructor(options: ClientOptions);
+
   action(
     channel: string,
     message: string,

@@ -275,7 +275,7 @@ module.exports = class IrcClientBase extends EventEmitter {
               const username = tags['login'];
               tags['message-type'] = 'messagedeleted';
 
-              this.emit('messagedeleted', channel, username, deletedMessage, tags)
+              this.emit('chatdeleted', channel, username, deletedMessage, tags)
             }
             break;
 
