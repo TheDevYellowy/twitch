@@ -8,16 +8,19 @@ module.exports = class EventSub extends EventEmitter {
   /**
    * @param {string} client_id
    * @param {string} client_secret
-   * @param {?string} client_token
-   * @param {?string} refresh_token
    */
-  constructor(client_id, client_secret, client_token = null, refresh_token = null) {
+  constructor(client_id, client_secret, options = { client_token: '', refresh_token: '', api: null }) {
     super();
     /** @type {?WebSocket} */
     this.connection = null;
     this.connectedAt = null;
     this.id = null;
-    this.api = new API(client_id, client_secret, client_token, refresh_token);
+    if (options.api == null) {
+      this.api = new API(client_id, client_secret, options.client_token, options.refresh_token);
+    } else {
+      /** @type {API} */
+      this.api = options.api;
+    }
   }
 
   connect(url = null) {
