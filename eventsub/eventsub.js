@@ -95,9 +95,10 @@ module.exports = class EventSub extends EventEmitter {
     else if (packet.metadata.subscription_type) this.emit(packet.metadata.subscription_type, packet.payload.event);
   }
 
-  async subscribe(type, version, condition) {
+  async subscribe(type, version, condition, cHeaders) {
     const headers = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...cHeaders
     }
     const body = {
       "type": type,
