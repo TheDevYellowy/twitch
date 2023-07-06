@@ -5,11 +5,7 @@ const td = new TextDecoder();
 const API = require('../api/api');
 
 module.exports = class EventSub extends EventEmitter {
-  /**
-   * @param {string} client_id
-   * @param {string} client_secret
-   */
-  constructor(client_id, client_secret, options = { client_token: '', refresh_token: '', api: null }) {
+  constructor(client_id, client_secret, options = { client_token: null, refresh_token: null, api: null }) {
     super();
     /** @type {?WebSocket} */
     this.connection = null;

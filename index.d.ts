@@ -965,12 +965,17 @@ export type userUpdateEvent = {
   description: string;
 };
 
+export type EventSubOptions = {
+  client_token: null | string;
+  refresh_token: null | string;
+  api: null | API;
+};
+
 export class EventSub extends EventEmitter {
   constructor(
     client_id: string,
     client_secret: string,
-    client_token: null | string,
-    refresh_token: null | string,
+    options: EventSubOptions,
   );
   public connection: WebSocket | null;
   public connectedAt: null | number;
@@ -982,6 +987,9 @@ export class EventSub extends EventEmitter {
     type: eventType,
     version: subVersion,
     condition: conditions,
+    cHeaders: {
+      [key: string]: string;
+    },
   ): Promise<object>;
   public on(event: "debug", listener: (msg: string) => void): this;
   public on(event: "raw", listener: (packet: object) => void): this;
