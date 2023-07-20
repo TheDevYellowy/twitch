@@ -91,7 +91,7 @@ module.exports = class EventSub extends EventEmitter {
     else if (packet.metadata.subscription_type) this.emit(packet.metadata.subscription_type, packet.payload.event);
   }
 
-  async subscribe(type, version, condition, cHeaders) {
+  async subscribe(type, version, condition, cHeaders = {}) {
     const headers = {
       "Content-Type": "application/json",
       ...cHeaders
@@ -107,6 +107,8 @@ module.exports = class EventSub extends EventEmitter {
     }
 
     let res = await this.api.post('eventsub/subscriptions', headers, body);
+
+    if (res == undefined) return this.subscribe(type, version, condition, cHeaders);
 
     if (typeof res == 'string') { this.debug(res); return false; }
     else if (res.status == 200) return true;
