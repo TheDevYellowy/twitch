@@ -133,7 +133,7 @@ module.exports = class API extends EventEmitter {
       this.emit('refreshToken', token, refreshToken);
       return true;
     } else {
-      data = await res.json();
+      data = await res.text();
       console.log(data);
       return false;
     }
