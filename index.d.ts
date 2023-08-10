@@ -116,8 +116,8 @@ export type eventType =
   | "channel.shield_mode.end"
   | "channel.shoutout.create"
   | "channel.shoutout.receive"
-  | "channel.online"
-  | "channel.offline"
+  | "stream.online"
+  | "stream.offline"
   | "user.authorization.grant"
   | "user.authorization.revoke"
   | "user.update";
@@ -966,6 +966,7 @@ export type userUpdateEvent = {
 };
 
 export type EventSubOptions = {
+  customTokens: null | boolean;
   client_token: null | string;
   refresh_token: null | string;
   api: null | API;
@@ -1025,6 +1026,7 @@ export class API extends EventEmitter {
   constructor(
     id: string,
     secret: string,
+    customTokens: boolean,
     token: string | null,
     refreshToken: string | null,
   );

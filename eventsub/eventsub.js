@@ -5,14 +5,14 @@ const td = new TextDecoder();
 const API = require('../api/api');
 
 module.exports = class EventSub extends EventEmitter {
-  constructor(client_id, client_secret, options = { client_token: null, refresh_token: null, api: null }) {
+  constructor(client_id, client_secret, options = { customTokens: false, client_token: null, refresh_token: null, api: null }) {
     super();
     /** @type {?WebSocket} */
     this.connection = null;
     this.connectedAt = null;
     this.id = null;
     if (options.api == null) {
-      this.api = new API(client_id, client_secret, options.client_token, options.refresh_token);
+      this.api = new API(client_id, client_secret, options.customTokens, options.client_token, options.refresh_token);
     } else {
       /** @type {API} */
       this.api = options.api;

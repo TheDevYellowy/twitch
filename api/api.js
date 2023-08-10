@@ -2,7 +2,7 @@ const fetch = require('node-fetch').default;
 const { EventEmitter } = require('node:events');
 
 module.exports = class API extends EventEmitter {
-  constructor(id, secret, token, refreshToken) {
+  constructor(id, secret, customTokens = false, token, refreshToken) {
     super();
     this.client_id = id;
     this.client_secret = secret;
@@ -13,7 +13,7 @@ module.exports = class API extends EventEmitter {
       'Client-Id': this.client_id
     }
 
-    if (typeof token !== 'string') {
+    if (typeof token !== 'string' && !customTokens) {
       this.valid = false;
       console.log(`The token variable needs to be set`);
     } else {
@@ -114,8 +114,8 @@ module.exports = class API extends EventEmitter {
     }
   }
 
-  async resetToken() {
-    const res = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${this.client_id}&client_secret=${this.client_secret}&refresh_token=${this.refresh_token}&grant_type=refresh_token`, {
+  async resetToken(refresh = this.refresh_token) {
+    const res = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${this.client_id}&client_secret=${this.client_secret}&refresh_token=${refresh}&grant_type=refresh_token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'x-www-form-urlencoded'
