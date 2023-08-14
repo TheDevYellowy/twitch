@@ -1008,6 +1008,10 @@ export class EventSub extends EventEmitter {
     event: K,
     listener: (...args: Events[K]) => Awaitable<void>,
   ): this;
+  public emit<K extends keyof Events>(
+    event: K,
+    listener: (...args: Events[k]) => Awaitable<void>,
+  ): this;
 
   private onOpen(): void;
   private onMessage({ data }): void;
@@ -1020,6 +1024,10 @@ export class EventSub extends EventEmitter {
 export type headers = {
   "Authorization": string;
   "Client-Id": string;
+};
+
+export type header = {
+  [header: string]: string;
 };
 
 export class API extends EventEmitter {
@@ -1039,16 +1047,16 @@ export class API extends EventEmitter {
 
   public post(
     url: string,
-    headers: object,
+    headers: header,
     data: object,
   ): Promise<string | object>;
   public patch(
     url: string,
-    headers: object,
+    headers: header,
     data: object,
   ): Promise<string | object>;
-  public get(url: string): Promise<string | object>;
-  public delete(url: string): Promise<string | object>;
+  public get(url: string, headers: header): Promise<string | object>;
+  public delete(url: string, headers: header): Promise<string | object>;
 
   public on(
     event: "result",
