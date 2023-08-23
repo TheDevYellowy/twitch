@@ -40,8 +40,10 @@ module.exports = class API extends EventEmitter {
     else if (res.status == 401) {
       let success = await this.resetToken();
       if (success) return this.post(url, oldHeaders, data);
-    }
-    else {
+    } else if (res.status == 204) {
+      this.emit('result', 'post', url, 'No Content');
+      return {};
+    } else {
       let json = await res.json();
       this.emit('result', 'post', url, json);
       return json;
@@ -67,8 +69,10 @@ module.exports = class API extends EventEmitter {
     else if (res.status == 401) {
       let success = await this.resetToken();
       if (success) return this.patch(url, oldHeaders, data);
-    }
-    else {
+    } else if (res.status == 204) {
+      this.emit('result', 'patch', url, 'No Content');
+      return {};
+    } else {
       let json = await res.json();
       this.emit('result', 'patch', url, json);
       return json;
@@ -93,8 +97,10 @@ module.exports = class API extends EventEmitter {
     else if (res.status == 401) {
       let success = await this.resetToken();
       if (success) return this.get(url, oldHeaders);
-    }
-    else {
+    } else if (res.status == 204) {
+      this.emit('result', 'get', url, 'No Content');
+      return {};
+    } else {
       let json = await res.json();
       this.emit('result', 'get', url, json);
       return json;
@@ -118,8 +124,10 @@ module.exports = class API extends EventEmitter {
     else if (res.status == 401) {
       let success = await this.resetToken();
       if (success) return this.delete(url, oldHeaders);
-    }
-    else {
+    } else if (res.status == 204) {
+      this.emit('result', 'delete', url, 'No Content');
+      return {};
+    } else {
       let json = await res.json();
       this.emit('result', 'delete', url, json);
       return json;

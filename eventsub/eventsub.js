@@ -1,97 +1,73 @@
-const { WebSocket } = require('ws');
 const { EventEmitter } = require('node:events');
-const td = new TextDecoder();
 
+const websocket = require('./websocket');
+const webhook = require('./webhook');
 const API = require('../api/api');
 
+/**
+ * The main class, this will emit events for the varius events you subscribe to
+ * 
+ * ```js
+ * const { EventSub } = require('twitch-utils');
+ * 
+ * const eventsub = new EventSub({ client_id, client_secret, { api: { client_token, refresh_token } } });
+ * eventsub.connect('websocket');
+ * // or
+ * eventsub.connect('webhook', callback, secret, port) // port is automatically 80
+ * 
+ * eventsub.subscribe(type, version, condition);
+ * 
+ * eventsub.on('stream.online', event => {
+ *   console.log(event.broadcaster_user_name + ' is online');
+ * })
+ * ```
+ */
 module.exports = class EventSub extends EventEmitter {
-  constructor(client_id, client_secret, options = { customTokens: false, client_token: null, refresh_token: null, api: null }) {
+  constructor(client_id, client_secret, options = { api: {customTokens: false, client_token: null, refresh_token: null, API: null} }) {
     super();
-    /** @type {?WebSocket} */
-    this.connection = null;
-    this.connectedAt = null;
-    this.id = null;
-    if (options.api == null) {
-      this.api = new API(client_id, client_secret, options.customTokens, options.client_token, options.refresh_token);
+   
+    if (options.api.API == null) {
+      this.api = new API(client_id, client_secret, options.api.customTokens, options.api.client_token, options.api.refresh_token);
     } else {
       /** @type {API} */
-      this.api = options.api;
+      this.api = options.api.API;
+    }
+
+    this.type = null;
+    /** @type {webhook | null} */
+    this.webhook = null;
+    /** @type {websocket | null} */
+    this.websocket = null;
+  }
+
+  connect({ type, callback, secret, port = 80}) {
+    if(type !== 'websocket' && type !== 'webhook') return console.log(`Incorrect type passed into EventSub.connect() expected "websocket" or "webhook" got "${type}"`);
+    if(this.type !== null) return console.log(`You already have a ${this.type} connection, you can use eventsub.${this.type} to access it`);
+    this.type = type;
+
+    if(type == 'websocket') {
+      this.websocket = new websocket(this);
+    } else {
+      this.webhook = new webhook(this, callback, secret, port);
     }
   }
 
-  connect(url = null) {
-    let connectURL;
-    if (this.connection?.readyState == WebSocket.OPEN) return Promise.resolve();
-
-    if (url == null) connectURL = 'wss://eventsub.wss.twitch.tv/ws';
-    else connectURL = url;
-
-    return new Promise((resolve, reject) => {
-      this.connectedAt = Date.now();
-      const ws = this.connection = new WebSocket(connectURL);
-
-      ws.onopen = this.onOpen.bind(this);
-      ws.onmessage = this.onMessage.bind(this);
-    });
-  }
-
-  onOpen() {
-    this.debug(`[CONNECTED] took ${Date.now() - this.connectedAt}ms`);
-  }
-
-  onMessage({ data }) {
-    let raw;
-    if (data instanceof ArrayBuffer) data = new Uint8Array(data);
-    raw = data;
-    if (typeof raw !== 'string') raw = td.decode(raw);
-    let packet = JSON.parse(raw);
-    this.emit('raw', packet);
-
-    this.onPacket(packet)
-  }
-
-  async onPacket(packet) {
-    if (!packet) {
-      this.debug(`Recieved broken packet: ${packet}`);
-      return;
-    }
-
-    if (packet.metadata.message_type == 'session_welcome') {
-      this.id = packet.payload.session.id;
-      this.emit('online');
-    }
-
-    if (packet.metadata.message_type == 'session_reconnect') {
-      const ws = new WebSocket(packet.payload.session.reconnect_url);
-      this.connectedAt = Date.now();
-      ws.on('message', async (data) => {
-        let raw;
-        if (data instanceof ArrayBuffer) data = new Uint8Array(data);
-        raw = data;
-        if (typeof raw !== 'string') raw = td.decode(raw);
-        let packet = JSON.parse(raw);
-
-        if (packet.metadata.message_type == 'session_welcome') {
-          await this.connection.close();
-          this.connection = ws;
-          this.id = packet.payload.session.id;
-          this.emit('online');
-
-          ws.off('message', () => { });
-
-          ws.onopen = this.onOpen.bind(this);
-          ws.onmessage = this.onMessage.bind(this);
-
-          this.onOpen();
-        }
-      });
-    }
-
-    if (packet.metadata.subscription_type == 'drop.entitlement.grant') this.emit(packet.metadata.subscription_type, packet.payload.events);
-    else if (packet.metadata.subscription_type) this.emit(packet.metadata.subscription_type, packet.payload.event);
-  }
-
+  /**
+   * Subscribe to an event, cHeaders stands for change headers it's for headers that you want to change.
+   * 
+   * This returns a boolean true if it's a success and false if it failed it will also emit the a debug event with the message if it failed
+   * 
+   * ```js
+   * eventsub.subscribe('stream.online', 1, {
+   *   broadcaster_user_id: ''
+   * });
+   * ```
+   */
   async subscribe(type, version, condition, cHeaders = {}) {
+    if(this.type == null) {
+      return console.log(`You need to run the connect function first before you can subscribe to events`);
+    }
+
     const headers = {
       "Content-Type": "application/json",
       ...cHeaders
@@ -100,9 +76,19 @@ module.exports = class EventSub extends EventEmitter {
       "type": type,
       "version": version,
       "condition": condition,
-      "transport": {
+      "transport": {}
+    }
+
+    if (this.type == 'websocket') {
+      body.transport = {
         "method": "websocket",
-        "session_id": this.id
+        "session_id": this.websocket.id,
+      }
+    } else {
+      body.transport = {
+        "method": "webhooks",
+        "callback": this.webhook.callback,
+        "secret": this.webhook.secret
       }
     }
 
