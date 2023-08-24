@@ -86,7 +86,7 @@ module.exports = class EventSub extends EventEmitter {
       }
     } else {
       body.transport = {
-        "method": "webhooks",
+        "method": "webhook",
         "callback": this.webhook.callback,
         "secret": this.webhook.secret
       }
