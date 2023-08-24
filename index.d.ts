@@ -991,8 +991,9 @@ export class EventSub extends EventEmitter {
     options: EventSubOptions,
   );
 
-  private websocket: websocket | null;
-  private webhook: webhook | null;
+  public type: "websocket" | "webhook";
+  public websocket: websocket | null;
+  public webhook: webhook | null;
 
   public api: API;
 
