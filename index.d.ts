@@ -1,6 +1,6 @@
 import { EventEmitter } from "node:events";
 import { WebSocket } from "ws";
-import { Express } from 'express';
+import { Application } from 'express';
 
 export type Awaitable<T> = T | PromiseLike<T>;
 
@@ -1037,7 +1037,7 @@ export class webhook {
   constructor(parent: EventSub, callback: string, secret: string, port: number | undefined);
   public parent: EventSub;
   public secret: string;
-  public app: Express.Application;
+  public app: Application;
 
   private callback: string;
 
