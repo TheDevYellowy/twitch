@@ -42,7 +42,7 @@ module.exports = class websocket {
     let packet = JSON.parse(raw);
     this.emit('raw', packet);
 
-    this.onPacket(packet)
+    this.onPacket(packet);
   }
 
   async onPacket(packet) {

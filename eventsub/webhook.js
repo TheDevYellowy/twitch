@@ -14,7 +14,7 @@ const message_type_revocation = 'revocation';
 const HMAC_PREFIX = 'sha256=';
 
 module.exports = class webhook {
-  constructor(parent, callback, secret, port) {
+  constructor(parent, callback, secret, port = 80) {
     /** @type {EventSub} */
     this.parent = parent;
     this.callback = callback;
@@ -58,6 +58,8 @@ module.exports = class webhook {
         res.sendStatus(403);
       }
     });
+
+    this.app.listen(this.port, () => this.parent.emit("online"));
   }
 
   getHmacMessage(req) {
