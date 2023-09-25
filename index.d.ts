@@ -1012,6 +1012,21 @@ export class EventSub extends EventEmitter {
   public on(event: "online", listener: () => void): this;
   public on(event: "revocation", listener: (reason: "user_removed" | "authorization_revoked" | "notification_failures_exceeded" | "version_removed") => void): this;
 
+  public once(event: "debug", listener: (msg: string) => void): this;
+  public once(event: "raw", listener: (packet: object) => void): this;
+  public once(event: "online", listener: () => void): this;
+  public once(event: "revocation", listener: (reason: "user_removed" | "authorization_revoked" | "notification_failures_exceeded" | "version_removed") => void): this;
+
+  public off(event: "debug", listener: (msg: string) => void): this;
+  public off(event: "raw", listener: (packet: object) => void): this;
+  public off(event: "online", listener: () => void): this;
+  public off(event: "revocation", listener: (reason: "user_removed" | "authorization_revoked" | "notification_failures_exceeded" | "version_removed") => void): this;
+
+  public emit(event: "debug", listener: (msg: string) => void): this;
+  public emit(event: "raw", listener: (packet: object) => void): this;
+  public emit(event: "online", listener: () => void): this;
+  public emit(event: "revocation", listener: (reason: "user_removed" | "authorization_revoked" | "notification_failures_exceeded" | "version_removed") => void): this;
+
   public on<K extends keyof Events>(
     event: K,
     listener: (...args: Events[K]) => Awaitable<void>

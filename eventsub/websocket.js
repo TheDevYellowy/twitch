@@ -40,7 +40,7 @@ module.exports = class websocket {
     raw = data;
     if (typeof raw !== 'string') raw = td.decode(raw);
     let packet = JSON.parse(raw);
-    this.emit('raw', packet);
+    this.parent.emit('raw', packet);
 
     this.onPacket(packet);
   }
@@ -53,7 +53,7 @@ module.exports = class websocket {
 
     if (packet.metadata.message_type == 'session_welcome') {
       this.id = packet.payload.session.id;
-      this.emit('online');
+      this.parent.emit('online');
     }
 
     if (packet.metadata.message_type == 'session_reconnect') {
@@ -70,7 +70,7 @@ module.exports = class websocket {
           await this.connection.close();
           this.connection = ws;
           this.id = packet.payload.session.id;
-          this.emit('online');
+          this.parent.emit('online');
 
           ws.off('message', () => { });
 
@@ -82,7 +82,7 @@ module.exports = class websocket {
       });
     }
 
-    if (packet.metadata.subscription_type == 'drop.entitlement.grant') this.emit(packet.metadata.subscription_type, packet.payload.events);
-    else if (packet.metadata.subscription_type) this.emit(packet.metadata.subscription_type, packet.payload.event);
+    if (packet.metadata.subscription_type == 'drop.entitlement.grant') this.parent.emit(packet.metadata.subscription_type, packet.payload.events);
+    else if (packet.metadata.subscription_type) this.parent.emit(packet.metadata.subscription_type, packet.payload.event);
   }
 }
