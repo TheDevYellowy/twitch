@@ -31,7 +31,7 @@ module.exports = class websocket {
   }
 
   onOpen() {
-    this.debug(`[CONNECTED] took ${Date.now() - this.connectedAt}ms`);
+    this.parent.debug(`[CONNECTED] took ${Date.now() - this.connectedAt}ms`);
   }
 
   onMessage({ data }) {
@@ -47,7 +47,7 @@ module.exports = class websocket {
 
   async onPacket(packet) {
     if (!packet) {
-      this.debug(`Recieved broken packet: ${packet}`);
+      this.parent.debug(`Recieved broken packet: ${packet}`);
       return;
     }
 
