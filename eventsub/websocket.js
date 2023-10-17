@@ -35,14 +35,18 @@ module.exports = class websocket {
   }
 
   onMessage({ data }) {
-    let raw;
-    if (data instanceof ArrayBuffer) data = new Uint8Array(data);
-    raw = data;
-    if (typeof raw !== 'string') raw = td.decode(raw);
-    let packet = JSON.parse(raw);
-    this.parent.emit('raw', packet);
+    try {
+      let raw;
+      if (data instanceof ArrayBuffer) data = new Uint8Array(data);
+      raw = data;
+      if (typeof raw !== 'string') raw = td.decode(raw);
+      let packet = JSON.parse(raw);
+      this.parent.emit('raw', packet);
 
-    this.onPacket(packet);
+      this.onPacket(packet);
+    } catch (e) {
+      this.parent.debug(`Error parsing message: ${e}`); 
+    }
   }
 
   async onPacket(packet) {

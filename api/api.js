@@ -81,7 +81,7 @@ module.exports = class API extends EventEmitter {
     }
   }
 
-  async get(url, headers = {}) {
+  async get(url, query = {}, headers = {}) {
     if (!this.valid) return 'The token variable needs to be set';
     let oldHeaders = headers;
     let theaders = this.headers;
@@ -90,9 +90,16 @@ module.exports = class API extends EventEmitter {
       ...headers
     }
 
-    const res = await fetch(`https://api.twitch.tv/helix/${url}`, {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) {
+      if(typeof value == 'string') params.append(key, value);
+      else params.append(key, String(value));
+    }
+
+    const res = await fetch(`https://api.twitch.tv/helix/${url}?${params.toString()}`, {
       method: 'GET',
-      headers: headers
+      headers: headers,
+      timeout: 5000
     });
 
     if (res.status === 401 && !this.refresh_token) return 'Token expired, if you want it to auto update please set refresh_token';
@@ -109,7 +116,7 @@ module.exports = class API extends EventEmitter {
     }
   }
 
-  async delete(url, headers = {}) {
+  async delete(url, query = {}, headers = {}) {
     if (!this.valid) return 'The token variable needs to be set';
     let oldHeaders = headers;
     let theaders = this.headers;
@@ -117,7 +124,14 @@ module.exports = class API extends EventEmitter {
       ...theaders,
       ...headers
     }
-    const res = await fetch(`https://api.twitch.tv/helix/${url}`, {
+
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) {
+      if(typeof value == 'string') params.append(key, value);
+      else params.append(key, String(value));
+    }
+
+    const res = await fetch(`https://api.twitch.tv/helix/${url}?${params.toString()}`, {
       method: 'DELETE',
       headers: headers
     });
