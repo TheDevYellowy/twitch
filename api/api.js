@@ -99,7 +99,6 @@ module.exports = class API extends EventEmitter {
     const res = await fetch(`https://api.twitch.tv/helix/${url}?${params.toString()}`, {
       method: 'GET',
       headers: headers,
-      timeout: 5000
     });
 
     if (res.status === 401 && !this.refresh_token) return 'Token expired, if you want it to auto update please set refresh_token';
