@@ -157,9 +157,8 @@ module.exports = class API extends EventEmitter {
       }
     });
 
-    var data;
     if (res.ok) {
-      data = await res.json();
+      const data = await res.json();
       let token = data.access_token;
       let refreshToken = data.refresh_token;
       this.token = token;
@@ -168,7 +167,7 @@ module.exports = class API extends EventEmitter {
       this.emit('refreshToken', token, refreshToken);
       return true;
     } else {
-      data = await res.text();
+      const data = await res.text();
       console.log(data);
       return false;
     }
