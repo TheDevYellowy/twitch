@@ -1,6 +1,6 @@
 const fetch = require('node-fetch').default;
 const { EventEmitter } = require('node:events');
-const { API } = require('../index');
+const { API } = require('../index.d.ts');
 
 /** @type {API} */
 module.exports = class API extends EventEmitter {
