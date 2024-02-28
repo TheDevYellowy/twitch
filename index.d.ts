@@ -4,17 +4,11 @@ import { Application } from "express";
 
 export type Awaitable<T> = T | PromiseLike<T>;
 
-export type Enumerate<
-  N extends number,
-  Acc extends number[] = []
-> = Acc["length"] extends N
+export type Enumerate<N extends number, Acc extends number[] = []> = Acc["length"] extends N
   ? Acc[number]
   : Enumerate<N, [...Acc, Acc["length"]]>;
 
-type NumRange<F extends number, T extends number> = Exclude<
-  Enumerate<T>,
-  Enumerate<F>
->;
+type NumRange<F extends number, T extends number> = Exclude<Enumerate<T>, Enumerate<F>>;
 
 // EVENTSUB TYPINGS
 
@@ -36,15 +30,9 @@ export interface Events {
   "channel.guest_star_guest.update": [event: guestStarGuestUpdateEvent];
   "channel.guest_star_slot.update": [event: guestStarSlotUpdateEvent];
   "channel.guest_star_settings.update": [event: guestStarSettingsUpdateEvent];
-  "channel.channel_points_custom_reward.add": [
-    event: channelPointsCustomRewardAddEvent
-  ];
-  "channel.channel_points_custom_reward.update": [
-    event: channelPointsCustomRewardUpdateEvent
-  ];
-  "channel.channel_points_custom_reward.remove": [
-    event: channelPointsCustomRewardRemoveEvent
-  ];
+  "channel.channel_points_custom_reward.add": [event: channelPointsCustomRewardAddEvent];
+  "channel.channel_points_custom_reward.update": [event: channelPointsCustomRewardUpdateEvent];
+  "channel.channel_points_custom_reward.remove": [event: channelPointsCustomRewardRemoveEvent];
   "channel.channel_points_custom_reward_redemption.add": [
     event: channelPointsCustomRewardRedemptionAddEvent
   ];
@@ -63,9 +51,7 @@ export interface Events {
   "channel.charity_campaign.progress": [event: charityCampaignProgressEvent];
   "channel.charity_campaign.stop": [event: charityCampaignStopEvent];
   "drop.entitlement.grant": [events: dropEntitlementGrantEvent];
-  "extension.bits_transaction.create": [
-    event: extensionBitsTransactionCreateEvent
-  ];
+  "extension.bits_transaction.create": [event: extensionBitsTransactionCreateEvent];
   "channel.goal.begin": [event: goalsEvent];
   "channel.goal.progress": [event: goalsEvent];
   "channel.goal.end": [event: goalsEvent];
@@ -999,11 +985,7 @@ export type connectOptions =
     };
 
 export class EventSub extends EventEmitter {
-  constructor(
-    client_id: string,
-    client_secret: string,
-    options: EventSubOptions
-  );
+  constructor(client_id: string, client_secret: string, options: EventSubOptions);
 
   public type: "websocket" | "webhook";
   public websocket: websocket | null;
@@ -1098,12 +1080,7 @@ export class EventSub extends EventEmitter {
 }
 
 export class webhook {
-  constructor(
-    parent: EventSub,
-    callback: string,
-    secret: string,
-    port: number | undefined
-  );
+  constructor(parent: EventSub, callback: string, secret: string, port: number | undefined);
   public parent: EventSub;
   public secret: string;
   public app: Application;
@@ -1170,12 +1147,7 @@ type header = {
 };
 
 export type label = {
-  id:
-    | "DrugsIntoxication"
-    | "SexualThemes"
-    | "ViolentGraphic"
-    | "Gambling"
-    | "ProfanityVulgarity";
+  id: "DrugsIntoxication" | "SexualThemes" | "ViolentGraphic" | "Gambling" | "ProfanityVulgarity";
   is_enabled: boolean;
 };
 
@@ -2249,6 +2221,25 @@ export interface Get {
       }[];
     }
   ];
+  "moderation/channels": [
+    {
+      user_id: string;
+      after?: string;
+      first?: string;
+    },
+    {
+      data: {
+        broadcaster_id: string;
+        broadcaster_login: string;
+        broadcaster_name: string;
+      }[];
+      pagination:
+        | {
+            cursor: string;
+          }
+        | {};
+    }
+  ];
   "moderation/moderators": [
     {
       broadcaster_id: string;
@@ -2319,13 +2310,7 @@ export interface Get {
         bits_per_vote: 0;
         channel_points_voting_enabled: boolean;
         channel_points_per_vote: number;
-        status:
-          | "ACTIVE"
-          | "COMPLETED"
-          | "TERMINATED"
-          | "ARCHIVED"
-          | "MODERATED"
-          | "INVALID";
+        status: "ACTIVE" | "COMPLETED" | "TERMINATED" | "ARCHIVED" | "MODERATED" | "INVALID";
         duration: number;
         started_at: string;
         ended_at: string | null;
@@ -3196,13 +3181,7 @@ export interface PostRes {
       bits_per_vote: 0;
       channel_points_voting_enabled: boolean;
       channel_points_per_vote: number;
-      status:
-        | "ACTIVE"
-        | "COMPLETED"
-        | "TERMINATED"
-        | "ARCHIVED"
-        | "MODERATED"
-        | "INVALID";
+      status: "ACTIVE" | "COMPLETED" | "TERMINATED" | "ARCHIVED" | "MODERATED" | "INVALID";
       duration: number;
       started_at: string;
       ended_at: string | null;
@@ -3428,12 +3407,7 @@ export interface PatchRes {
   };
   "entitlements/drops": {
     data: {
-      status:
-        | "INVALID_ID"
-        | "NOT_FOUND"
-        | "SUCCESS"
-        | "UNAUTHORIZED"
-        | "UPDATE_FAILED";
+      status: "INVALID_ID" | "NOT_FOUND" | "SUCCESS" | "UNAUTHORIZED" | "UPDATE_FAILED";
       ids: string[];
     }[];
   };
@@ -3457,13 +3431,7 @@ export interface PatchRes {
       bits_per_vote: 0;
       channel_points_voting_enabled: boolean;
       channel_points_per_vote: number;
-      status:
-        | "ACTIVE"
-        | "COMPLETED"
-        | "TERMINATED"
-        | "ARCHIVED"
-        | "MODERATED"
-        | "INVALID";
+      status: "ACTIVE" | "COMPLETED" | "TERMINATED" | "ARCHIVED" | "MODERATED" | "INVALID";
       duration: number;
       started_at: string;
       ended_at: string | null;
@@ -3560,10 +3528,7 @@ export class API extends EventEmitter {
     headers: header
   ): Promise<string | Delete[K][1]>;
 
-  public resetToken(
-    refresh: string,
-    return_token: boolean
-  ): Promise<string | boolean>;
+  public resetToken(refresh: string, return_token: boolean): Promise<string | boolean>;
 
   public on(
     event: "result",
@@ -3573,8 +3538,5 @@ export class API extends EventEmitter {
       json: object | "No Content"
     ) => void
   ): this;
-  public on(
-    event: "refreshToken",
-    listener: (token: string, refreshToken: string) => void
-  ): this;
+  public on(event: "refreshToken", listener: (token: string, refreshToken: string) => void): this;
 }
