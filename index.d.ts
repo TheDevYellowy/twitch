@@ -13,8 +13,13 @@ type NumRange<F extends number, T extends number> = Exclude<Enumerate<T>, Enumer
 // EVENTSUB TYPINGS
 
 export interface Events {
+  "automod.message.hold": [event: any];
+  "automod.message.update": [event: any];
+  "automod.settings.update": [event: any];
+  "automod.terms.update": [event: any];
   "channel.update": [event: updateEvent];
   "channel.follow": [event: followEvent];
+  "": [event: any];
   "channel.subscribe": [event: subscribeEvent];
   "channel.subscription.end": [event: subscriptionEndEvent];
   "channel.subscription.gift": [event: subscriptionGiftEvent];
@@ -3540,3 +3545,48 @@ export class API extends EventEmitter {
   ): this;
   public on(event: "refreshToken", listener: (token: string, refreshToken: string) => void): this;
 }
+
+export class PubSub extends EventEmitter {
+  constructor(
+    auth_token: string
+  );
+  public token: string;
+  public subscriptions: PubSubSubscription[];
+  public connection: null | WebSocket;
+  public heartbeat: null | NodeJS.Timeout;
+  private topics: string[];
+
+  public connect(): void;
+  public subscribe(options: subscribeOptions, token?: string): void;
+  public createNonce(): string;
+}
+
+type subscribeOptions = {
+  topic: "channel-bits-events-v2";
+  channelID: string;
+} | {
+  topic: "channel-bits-badge-unlocks";
+  channelID: string;
+} | {
+  topic: "channel-subscribe-events-v1";
+  channelID: string;
+} | {
+  topic: "automod-queue";
+  modID: string;
+  channelID: string;
+} | {
+  topic: "chat_moderator_actions";
+  userID: string;
+  channelID: string;
+} | {
+  topic: "low-trust-users";
+  channelID: string;
+  susUserID: string;
+} | {
+  topic: "user-moderation-notifications";
+  userID: string;
+  channelID: string;
+} | {
+  topic: "whispers";
+  userID: string;
+};
