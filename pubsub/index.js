@@ -15,6 +15,7 @@ class PubSub extends EventEmitter {
       "channel-bits-events-v2",
       "channel-bits-badge-unlocks",
       "channel-subscribe-events-v1",
+      "channel-points-channel-v1",
       "automod-queue",
       "chat_moderator_actions",
       "low-trust-users",
@@ -29,30 +30,50 @@ class PubSub extends EventEmitter {
     const hbInterval = 1000 * 60;
     const ps = this;
 
-    this.connection = new WebSocket(url);
+    const ws = this.connection = new WebSocket(url);
 
-    this.connection.onopen = function() {
+    ws.onopen = function() {
       ps.sendHeartbeat();
-      ps.heartbeat = setInterval(ps.sendHeartbeat(), hbInterval);
+      ps.heartbeat = setInterval(() => {ps.sendHeartbeat()}, hbInterval);
+
+      ps.emit("online");
     }
 
-    this.connection.onmessage = function(event) {
+    ws.onmessage = function(event) {
       let message = JSON.parse(event.data.toString());
+      ps.emit("raw", message);
 
-      if(message.type == "RECONNECT") {
-        this.close();
-        ps.emit("reconnect");
-        ps.connection = null;
-        return;
+      switch (message.type) {
+        case "RECONNECT":
+          this.close();
+          ps.emit("reconnect");
+          ps.connection = null;
+          break;
+        case "RESPONSE":
+          ps.emit("response", { nonce: message.nonce, error: message.error });
+          break;
+        case "AUTH_REVOKED":
+          ps.emit("authRevoked", message.data.topics)
+          break;
+        default:
+          ps.emit(message.type.split(".")[0], message.data);
+          break;
       }
-
-      ps.emit(message.type, message.data);
     }
   }
 
-  subscribe(options = {}, token = this.token) {
-    if(this.connection = null) return;
-    const topic = options.topic;
+  /**
+   * Listen to PubSub topics
+   * @example
+   * // Listens to when a user redeems channel points
+   * PubSub.listen({
+   *  topic: "channel-points-channel-v1",
+   *  channelID: "1234567"
+   * })
+   */
+  listen(options = {}, token = this.token) {
+    if(this.connection == null) return;
+    let topic = options.topic;
     if(this.topics.includes(topic)) {
       switch (topic) {
         case "automod-queue.":
@@ -83,6 +104,22 @@ class PubSub extends EventEmitter {
     this.subscriptions.set(topic, data);
 
     this.connection.send(JSON.stringify(data));
+  }
+
+  unlisten(topic) {
+    const data = this.subscriptions.get(topic);
+
+    if(data) {
+      data.type = "UNLISTEN";
+
+      this.connection.send(JSON.stringify(data));
+    } else return;
+  }
+
+  sendHeartbeat() {
+    if(this.connection) {
+      this.connection.send(JSON.stringify({ "type": "PING" }));
+    }
   }
 
   createNonce() {

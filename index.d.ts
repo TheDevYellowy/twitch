@@ -9,6 +9,7 @@ export type Enumerate<N extends number, Acc extends number[] = []> = Acc["length
   : Enumerate<N, [...Acc, Acc["length"]]>;
 
 type NumRange<F extends number, T extends number> = Exclude<Enumerate<T>, Enumerate<F>>;
+type MapKeys<M extends Map<any, any>> = M extends Map<infer K, any> ? K : never;
 
 // EVENTSUB TYPINGS
 
@@ -1009,7 +1010,7 @@ export class EventSub extends EventEmitter {
     }
   ): Promise<object>;
   public on(event: "debug", listener: (msg: string) => void): this;
-  public on(event: "raw", listener: (packet: object) => void): this;
+  public on(event: "raw", listener: (packet: Record<string, any>) => void): this;
   public on(event: "online", listener: () => void): this;
   public on(
     event: "revocation",
@@ -3551,17 +3552,151 @@ export class PubSub extends EventEmitter {
     auth_token: string
   );
   public token: string;
-  public subscriptions: PubSubSubscription[];
+  public subscriptions: Map<string, PubSubSubscription>;
   public connection: null | WebSocket;
   public heartbeat: null | NodeJS.Timeout;
   private topics: string[];
 
+  public on<E extends keyof PubSubEvents>(
+    event: E,
+    listener: (...args: PubSubEvents[E]) => void
+  ): this;
+  public once<E extends keyof PubSubEvents>(
+    event: E,
+    listener: (...args: PubSubEvents[E]) => void
+  ): this;
+  public off<E extends keyof PubSubEvents>(
+    event: E,
+    listener: (...args: PubSubEvents[E]) => void
+  ): this;
+
   public connect(): void;
-  public subscribe(options: subscribeOptions, token?: string): void;
+  public listen(options: listenOptions, token?: string): void;
+  public unlisten(topic: MapKeys<PubSub["subscriptions"]>): void;
   public createNonce(): string;
 }
 
-type subscribeOptions = {
+interface PubSubSubscription {
+  type: "LISTEN";
+  nonce: string;
+  data: {
+    topics: string[];
+    auth_token: string;
+  }
+}
+
+type topics =
+  "channel-bits-events-v2" |
+  "channel-bits-badge-unlocks" |
+  "channel-subscribe-events-v1" |
+  "automod-queue" |
+  "chat_moderator_actions" |
+  "low-trust-users" |
+  "user-moderation-notifications" |
+  "whispers";
+
+interface PubSubEvents {
+  // Non Subscription based events
+  "response": {
+    "nonce": string;
+    "error": string;
+  };
+  "authRevoked": string[];
+  "pong": void;
+  "reconnect": void;
+
+  // Subscription based events
+  "channel-bits-events-v2": {
+    "topic": string;
+    "message": {
+      "badge_entitlement": {
+        "new_version": number;
+        "previous_version": number;
+      } | null | undefined;
+      "bits_used": number;
+      "channel_id": string;
+      "chat_message": string;
+      "context": string;
+      "is_anonymous": boolean;
+      "message_id": string;
+      "message_type": string;
+      "time": string;
+      "total_bits_used": number;
+      "user_id": string | null;
+      "user_name": string | null;
+      "version": string;
+    }
+  }
+  "channel-bits-badge-unlocks": {
+    "topic": string;
+    "message": {
+      "data": {
+        "user_id": string;
+        "user_name": string;
+        "channel_id": string;
+        "channel_name": string;
+        "badge_tier": number;
+        "chat_message": string;
+        "time": string;
+      }
+    }
+  }
+  "channel-points-channel-v1": {
+    "topic": string;
+    "message": {
+      "type": "reward-redeemed";
+      "data": {
+        "timestamp": string;
+        "redemption": {
+          "id": string;
+          "user": {
+            "id": string;
+            "login": string;
+            "display_name": string;
+          };
+          "channel_id": string;
+          "redeemed_at": string;
+          "reward": {
+            "id": string;
+            "channel_id": string;
+            "title": string;
+            "prompt": string;
+            "cost": number;
+            "is_user_input_required": boolean;
+            "is_sub_only": boolean;
+            "image": {
+              "url_1x": string;
+              "url_2x": string;
+              "url_4x": string;
+            };
+            "default_image": {
+              "url_1x": string;
+              "url_2x": string;
+              "url_4x": string;
+            };
+            "background_color": string;
+            "is_enabled": boolean;
+            "is_paused": boolean;
+            "is_in_stock": boolean;
+            "max_per_stream": {
+              "is_enabled": boolean;
+              "max_per_stream": number;
+            };
+            "should_redemptions_skip_request_queue": boolean;
+          }
+          "user_input": string | null | undefined;
+          "status": "FULFILLED" | "UNFULFILLED";
+        }
+      }
+    }
+  };
+  "channel-subscribe-events-v1": {
+    "topic": string;
+
+  }
+}
+
+type listenOptions = {
   topic: "channel-bits-events-v2";
   channelID: string;
 } | {
@@ -3569,6 +3704,9 @@ type subscribeOptions = {
   channelID: string;
 } | {
   topic: "channel-subscribe-events-v1";
+  channelID: string;
+} | {
+  topic: "channel-points-channel-v1";
   channelID: string;
 } | {
   topic: "automod-queue";
